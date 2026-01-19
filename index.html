@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Мясной калькулятор вкуса</title>
 
-  <!-- Telegram WebApp (не обязателен, но полезен для темы/вида) -->
+  <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <!-- PDF: jsPDF + AutoTable -->
@@ -14,38 +14,47 @@
 
   <style>
     :root{
-      --bg: #0f0f10;
-      --card: #161618;
-      --text: #f2f2f3;
-      --muted: #b7b7bd;
-      --line: rgba(255,255,255,.08);
-      --accent: rgb(206,18,45);
-      --accent2: rgb(168,174,177);
-      --ok: #45d483;
-      --warn:#ffcc66;
+      /* Brand */
+      --accent: rgb(206,18,45);        /* бордо */
+      --gray: rgb(168,174,177);        /* серый */
+      --white: #ffffff;
 
-      --r: 18px;
-      --pad: 14px;
-      --shadow: 0 10px 30px rgba(0,0,0,.25);
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      /* UI */
+      --bg: #f6f7f8;
+      --card: #ffffff;
+      --text: #111317;
+      --muted: #6b717a;
+      --line: rgba(17,19,23,.08);
+
+      --r-xl: 26px;
+      --r-lg: 20px;
+      --r-md: 16px;
+
+      --shadow: 0 12px 32px rgba(17,19,23,.10);
+      --shadow-soft: 0 10px 26px rgba(17,19,23,.07);
+
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
 
-    /* Telegram theme integration (если доступно) */
-    body.tg {
+    /* Telegram theme (подхватит светлые переменные, если они есть) */
+    body.tg{
       --bg: var(--tg-theme-bg-color, var(--bg));
       --text: var(--tg-theme-text-color, var(--text));
       --muted: var(--tg-theme-hint-color, var(--muted));
       --card: var(--tg-theme-secondary-bg-color, var(--card));
+      --line: rgba(17,19,23,.08);
     }
 
     *{ box-sizing:border-box; }
     html, body{ height:100%; }
+
     body{
       margin:0;
-      background: radial-gradient(1200px 700px at 20% -10%, rgba(206,18,45,.18), transparent 60%),
-                  radial-gradient(1000px 650px at 90% 0%, rgba(168,174,177,.12), transparent 55%),
-                  var(--bg);
+      background:
+        radial-gradient(900px 520px at 12% -10%, rgba(206,18,45,.10), transparent 55%),
+        radial-gradient(900px 520px at 95% 0%, rgba(168,174,177,.18), transparent 55%),
+        var(--bg);
       color: var(--text);
       font-family: var(--sans);
       -webkit-font-smoothing: antialiased;
@@ -54,55 +63,72 @@
     }
 
     .wrap{
-      max-width: 1100px;
+      max-width: 1120px;
       margin: 0 auto;
       display: grid;
       gap: 14px;
     }
 
-    header{
+    /* Верхняя панель, как у моб.приложения */
+    .topbar{
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-soft);
+      padding: 14px 14px;
       display:flex;
-      gap:12px;
-      align-items:flex-start;
+      align-items:center;
       justify-content:space-between;
-      flex-wrap:wrap;
+      gap: 12px;
+      backdrop-filter: blur(10px);
     }
 
-    .title{
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .logoDot{
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(206,18,45,1), rgba(206,18,45,.82));
+      box-shadow: 0 10px 22px rgba(206,18,45,.25);
+      flex: 0 0 auto;
+    }
+    .brandText{
       display:flex;
       flex-direction:column;
-      gap:6px;
+      gap: 2px;
+      min-width: 0;
     }
-    .title h1{
-      margin:0;
-      font-size: 20px;
+    .brandText .t{
+      font-weight: 800;
       letter-spacing: .2px;
-      line-height:1.15;
+      font-size: 14px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 54ch;
     }
-    .title p{
-      margin:0;
-      color:var(--muted);
-      font-size: 13px;
-      line-height:1.35;
-      max-width: 66ch;
+    .brandText .s{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 54ch;
     }
 
-    .pill{
-      display:inline-flex;
+    .topActions{
+      display:flex;
+      gap: 10px;
       align-items:center;
-      gap:8px;
-      padding: 8px 10px;
-      background: rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      border-radius: 999px;
-      font-size: 12px;
-      color: var(--muted);
-      user-select:none;
-    }
-    .dot{
-      width:10px; height:10px; border-radius:50%;
-      background: var(--accent);
-      box-shadow: 0 0 0 3px rgba(206,18,45,.14);
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
 
     .grid{
@@ -110,109 +136,132 @@
       grid-template-columns: 1.05fr .95fr;
       gap:14px;
     }
-    @media (max-width: 920px){
+    @media (max-width: 960px){
       .grid{ grid-template-columns: 1fr; }
+      .topbar{ align-items:flex-start; }
+      .brandText .t{ max-width: 40ch; }
+      .brandText .s{ max-width: 40ch; }
     }
 
     .card{
-      background: rgba(255,255,255,.06);
+      background: var(--card);
       border: 1px solid var(--line);
-      border-radius: var(--r);
+      border-radius: var(--r-xl);
       box-shadow: var(--shadow);
       overflow:hidden;
-      backdrop-filter: blur(10px);
     }
 
-    .card .hd{
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
+    .hd{
+      padding: 14px 14px 10px 14px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap: 10px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,1), rgba(255,255,255,.92));
     }
-    .card .hd .h{
-      font-weight: 700;
+    .hd .h{
+      font-weight: 800;
       font-size: 14px;
       letter-spacing: .2px;
     }
-    .card .bd{ padding: 14px; }
+    .bd{ padding: 14px; }
 
-    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .sectionTitle{
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: .18px;
+      color: var(--muted);
+      margin: 2px 0 10px 2px;
+      text-transform: uppercase;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
     .row > *{ flex: 1; min-width: 180px; }
 
     label.small{
       display:block;
       font-size: 12px;
       color: var(--muted);
-      margin-bottom: 6px;
+      margin: 0 0 6px 2px;
     }
 
     input[type="text"], input[type="number"], select{
       width:100%;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(0,0,0,.16);
+      padding: 12px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(17,19,23,.10);
+      background: #fbfbfc;
       color: var(--text);
       outline:none;
+      transition: box-shadow .15s ease, border-color .15s ease;
     }
-    input::placeholder{ color: rgba(183,183,189,.65); }
+    input::placeholder{ color: rgba(107,113,122,.65); }
+
+    input:focus, select:focus{
+      border-color: rgba(206,18,45,.30);
+      box-shadow: 0 0 0 4px rgba(206,18,45,.10);
+      background: #fff;
+    }
+
     select{ cursor:pointer; }
 
-    .btnbar{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
     button{
-      border:0;
-      border-radius: 14px;
-      padding: 10px 12px;
+      border: 1px solid rgba(17,19,23,.10);
+      border-radius: 16px;
+      padding: 11px 12px;
       cursor:pointer;
-      font-weight: 700;
-      background: rgba(255,255,255,.08);
+      font-weight: 800;
+      background: #ffffff;
       color: var(--text);
-      border: 1px solid var(--line);
-    }
-    button.primary{
-      background: linear-gradient(180deg, rgba(206,18,45,.95), rgba(206,18,45,.75));
-      border: 1px solid rgba(206,18,45,.35);
-    }
-    button.ghost{
-      background: transparent;
+      transition: transform .05s ease, box-shadow .15s ease, background .15s ease;
+      box-shadow: 0 10px 22px rgba(17,19,23,.06);
     }
     button:active{ transform: translateY(1px); }
-    button[disabled]{ opacity:.5; cursor:not-allowed; }
+    button:hover{ background: #fbfbfc; }
+
+    button.primary{
+      background: linear-gradient(180deg, rgba(206,18,45,1), rgba(206,18,45,.86));
+      border: 1px solid rgba(206,18,45,.25);
+      color: #fff;
+      box-shadow: 0 16px 30px rgba(206,18,45,.22);
+    }
+    button.primary:hover{ filter: brightness(1.02); }
+
+    button.ghost{
+      background: transparent;
+      box-shadow: none;
+      border: 1px solid rgba(17,19,23,.10);
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    button[disabled]{ opacity:.55; cursor:not-allowed; box-shadow:none; }
 
     .chips{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
     }
-
     .chip{
       display:inline-flex;
       align-items:center;
       gap:8px;
-      padding: 8px 10px;
+      padding: 9px 10px;
       border-radius: 999px;
-      background: rgba(0,0,0,.18);
-      border: 1px solid var(--line);
+      background: #f4f5f6;
+      border: 1px solid rgba(17,19,23,.08);
       font-size: 12px;
       color: var(--text);
       user-select:none;
     }
     .chip input{
-      width: 14px; height: 14px;
+      width: 15px; height: 15px;
       accent-color: var(--accent);
-    }
-    .chip .k{
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 11px;
     }
 
     .hint{
@@ -225,6 +274,758 @@
     .list{
       display:flex;
       flex-direction:column;
+      gap: 12px;
+    }
+
+    .item{
+      border: 1px solid rgba(17,19,23,.08);
+      background: #ffffff;
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-soft);
+      padding: 14px;
+      display:grid;
       gap: 10px;
     }
-    .item{
+
+    .itemTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+    .name{
+      margin:0;
+      font-weight: 900;
+      font-size: 15px;
+      line-height: 1.2;
+      letter-spacing: .1px;
+    }
+
+    .meta{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(17,19,23,.08);
+      background: #f6f7f8;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .badge strong{
+      color: var(--text);
+      font-weight: 900;
+    }
+    .badge.gost{
+      background: rgba(206,18,45,.08);
+      border-color: rgba(206,18,45,.14);
+    }
+    .badge.gost strong{ color: var(--accent); }
+
+    .desc{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      margin-top: -2px;
+    }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 560px){
+      .kv{ grid-template-columns: 1fr; }
+    }
+    .box{
+      border: 1px solid rgba(17,19,23,.08);
+      background: #fafbfc;
+      border-radius: var(--r-lg);
+      padding: 11px;
+      min-height: 74px;
+    }
+    .box .k{
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: .15px;
+      text-transform: uppercase;
+    }
+    .box .v{
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.35;
+      white-space: pre-wrap;
+    }
+
+    .calcLine{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top: 2px;
+    }
+    .calcLine .badge{
+      background: #fff;
+    }
+
+    .cartWrap{
+      border: 1px solid rgba(17,19,23,.08);
+      border-radius: var(--r-xl);
+      overflow:hidden;
+      background: #ffffff;
+      box-shadow: var(--shadow-soft);
+    }
+    .cartHd{
+      padding: 12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      border-bottom: 1px solid rgba(17,19,23,.08);
+      background: #fff;
+    }
+    .cartBd{
+      padding: 12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+
+    .cartline{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 12px 12px;
+      border: 1px solid rgba(17,19,23,.08);
+      background: #fafbfc;
+      border-radius: var(--r-lg);
+    }
+
+    .cartline .l{
+      min-width: 0;
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+    }
+    .cartline .l .t{
+      font-weight: 900;
+      font-size: 13px;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 520px;
+    }
+    @media (max-width: 960px){
+      .cartline .l .t{ max-width: 340px; }
+    }
+    @media (max-width: 560px){
+      .cartline .l .t{ max-width: 220px; }
+    }
+
+    .mono{
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .footerhint{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      margin-top: 10px;
+      padding: 0 2px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="topbar">
+      <div class="brand">
+        <div class="logoDot" aria-hidden="true"></div>
+        <div class="brandText">
+          <div class="t">Мясной калькулятор вкуса</div>
+          <div class="s">Белый + серый, бордо как акцент. Под Telegram WebApp.</div>
+        </div>
+      </div>
+
+      <div class="topActions">
+        <button class="ghost" id="btnReset">Сбросить</button>
+        <button class="primary" id="btnPdf">Скачать PDF корзины</button>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <!-- ЛЕВО: Фильтры -->
+      <section class="card">
+        <div class="hd">
+          <div class="h">Поиск и фильтры</div>
+          <div class="meta" id="stats"></div>
+        </div>
+
+        <div class="bd">
+          <div class="sectionTitle">Поиск</div>
+
+          <div class="row">
+            <div style="flex: 1.2; min-width: 240px;">
+              <label class="small">Ищет по: область применения + рецептуры + наименование</label>
+              <input id="q" type="text" placeholder="например: краковская, салями, сервелат, жгуты..." />
+            </div>
+
+            <div style="flex:.8; min-width: 180px;">
+              <label class="small">Кг сырья</label>
+              <input id="kg" type="number" inputmode="decimal" min="0" step="0.1" placeholder="например: 37.5" />
+            </div>
+          </div>
+
+          <div style="height:14px"></div>
+
+          <div class="sectionTitle">Фильтры</div>
+
+          <div class="row">
+            <div>
+              <label class="small">Группа</label>
+              <select id="fGroup"></select>
+            </div>
+            <div>
+              <label class="small">Подгруппа</label>
+              <select id="fSub"></select>
+            </div>
+            <div>
+              <label class="small">Торговая марка</label>
+              <select id="fBrand"></select>
+            </div>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <div>
+              <label class="small">ГОСТ</label>
+              <select id="fGost">
+                <option value="">Любой</option>
+                <option value="Да">Да</option>
+                <option value="Нет">Нет</option>
+              </select>
+            </div>
+            <div>
+              <label class="small">Форма</label>
+              <select id="fForm"></select>
+            </div>
+          </div>
+
+          <div style="height:14px"></div>
+
+          <div class="sectionTitle">Запреты клиента</div>
+
+          <div class="row">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin: 0 0 8px 2px;">
+                <label class="small" style="margin:0;">Составные компоненты</label>
+                <button class="ghost" id="compAll" style="padding:8px 10px; border-radius: 14px;">Выбрать все</button>
+              </div>
+              <div class="chips" id="compChips"></div>
+              <div class="hint">Снял галочку, и все товары с этим компонентом скрываются.</div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="row">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin: 0 0 8px 2px;">
+                <label class="small" style="margin:0;">Сырьё</label>
+                <button class="ghost" id="meatAll" style="padding:8px 10px; border-radius: 14px;">Выбрать все</button>
+              </div>
+              <div class="chips" id="meatChips"></div>
+              <div class="hint">Снял галочку, и товары, где встречается это сырьё, скрываются.</div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+          <button id="btnAddAll" style="width:100%;">Добавить все результаты в корзину</button>
+        </div>
+      </section>
+
+      <!-- ПРАВО: Результаты + корзина -->
+      <section class="card">
+        <div class="hd">
+          <div class="h">Подбор смесей</div>
+          <div class="meta">Добавляй в корзину, потом PDF</div>
+        </div>
+
+        <div class="bd">
+          <div class="list" id="results"></div>
+
+          <div style="height:14px"></div>
+
+          <div class="cartWrap">
+            <div class="cartHd">
+              <div class="h" style="font-weight:900;">Корзина</div>
+              <button class="ghost" id="btnClearCart" style="padding:8px 10px; border-radius: 14px;">Очистить</button>
+            </div>
+            <div class="cartBd" id="cart"></div>
+          </div>
+
+          <div class="footerhint">
+            Пакеты считаются по правилу: 1 пакет на 10 кг мяса (округление вверх).
+            Если кг пусто, считаем как 1 кг.
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+<script>
+/** ====== ДАННЫЕ: 3 тестовые строки ====== */
+const DATA = [
+  {
+    group: "Комплексные смеси",
+    sub: "Комплексные смеси для полукопчёных и варёнокопченых колбас и деликатесов",
+    brand: "СТАБИ",
+    sku: "1111",
+    name: "СТАБИ ТЕСТ",
+    desc: "Комплексная смесь для полукопчёных и варёно-копченых колбас и деликатесов",
+    gost: "Нет",
+    form: "Сухая",
+    components: "Соль, Сахар, Перец, Чеснок",
+    application: "Полукопчёные колбасы, варёно-копченые колбасы, деликатесы",
+    recipes: "Краковская колбаса, Жгуты мясные",
+    raw: "Кролик, индейка, говядина, свинина, курица",
+    norm_g_per_kg: 5
+  },
+  {
+    group: "Комплексные смеси",
+    sub: "Комплексные смеси для полукопчёных и варёнокопченых колбас и деликатесов",
+    brand: "РУТАМИКС",
+    sku: "1112",
+    name: "РУТАМИКС САЛЯМИ ТЕСТ",
+    desc: "Комплексная смесь для полукопчёных и варёно-копченых колбас и деликатесов",
+    gost: "Нет",
+    form: "Влажная",
+    components: "Соль, Перец, Паприка, Экстракты пряностей",
+    application: "Полукопчёные колбасы, варёно-копченые колбасы, деликатесы",
+    recipes: "Салями, Жгуты мясные",
+    raw: "Кролик, индейка, курица",
+    norm_g_per_kg: 6
+  },
+  {
+    group: "Пряности",
+    sub: "Смеси натуральных пряностей и экстрактов пряностей",
+    brand: "РУТА",
+    sku: "1113",
+    name: "РУТА ГОСТ ТЕСТ КОЛБАС",
+    desc: "Смесь пряностей с классически перечным вкусом и ароматом",
+    gost: "Да",
+    form: "Сухая",
+    components: "Перец, Кориандр, Тмин",
+    application: "Полукопчёные колбасы, варёно-копченые колбасы, сосиски, ветчина",
+    recipes: "Краковская, Одесская, Армавирская, Полтавская, Сервелат",
+    raw: "Говядина, свинина",
+    norm_g_per_kg: 7
+  }
+];
+
+/** ====== Telegram WebApp cosmetics ====== */
+(function initTelegram(){
+  try{
+    if (window.Telegram && Telegram.WebApp){
+      document.body.classList.add("tg");
+      Telegram.WebApp.expand();
+      Telegram.WebApp.ready();
+    }
+  }catch(e){}
+})();
+
+/** ====== Helpers ====== */
+const $ = (id) => document.getElementById(id);
+const norm = (s) => (s || "").toString().trim();
+const toList = (csv) => norm(csv).split(",").map(x => x.trim()).filter(Boolean);
+const uniqSorted = (arr) => Array.from(new Set(arr)).sort((a,b)=>a.localeCompare(b,'ru'));
+
+function kgValue(){
+  const v = parseFloat($("kg").value);
+  if (Number.isFinite(v) && v > 0) return v;
+  return null;
+}
+
+function gramsTotal(item){
+  const kg = kgValue();
+  const baseKg = kg ?? 1;
+  return Math.round(baseKg * item.norm_g_per_kg * 100) / 100;
+}
+
+function packsTotal(){
+  const kg = kgValue();
+  const baseKg = kg ?? 1;
+  return Math.ceil(baseKg / 10);
+}
+
+/** ====== State ====== */
+let allowedComponents = new Set(); // checked = allowed
+let allowedMeats = new Set();
+let cart = new Map(); // sku -> item
+
+/** ====== Build filter options ====== */
+function fillSelect(sel, options, placeholder="Любой"){
+  sel.innerHTML = "";
+  const opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = placeholder;
+  sel.appendChild(opt0);
+  options.forEach(v=>{
+    const o=document.createElement("option");
+    o.value=v; o.textContent=v;
+    sel.appendChild(o);
+  });
+}
+
+function initFilters(){
+  const groups = uniqSorted(DATA.map(d=>d.group));
+  const subs = uniqSorted(DATA.map(d=>d.sub));
+  const brands = uniqSorted(DATA.map(d=>d.brand));
+  const forms = uniqSorted(DATA.map(d=>d.form));
+
+  fillSelect($("fGroup"), groups, "Любая");
+  fillSelect($("fSub"), subs, "Любая");
+  fillSelect($("fBrand"), brands, "Любая");
+  fillSelect($("fForm"), forms, "Любая");
+
+  const allComps = uniqSorted(DATA.flatMap(d => toList(d.components)));
+  allowedComponents = new Set(allComps);
+
+  const baseMeats = ["Кролик","Индейка","Свинина","Говядина","Курица"];
+  const fromData = uniqSorted(DATA.flatMap(d => toList(d.raw)));
+  const meats = uniqSorted(Array.from(new Set([...baseMeats, ...fromData])));
+  allowedMeats = new Set(meats);
+
+  renderChips("compChips", allComps, allowedComponents, "comp");
+  renderChips("meatChips", meats, allowedMeats, "meat");
+}
+
+function renderChips(containerId, values, setRef, kind){
+  const box = $(containerId);
+  box.innerHTML = "";
+  values.forEach(v=>{
+    const id = `${kind}_${v.replaceAll(" ","_").replaceAll("/","_")}`;
+    const label = document.createElement("label");
+    label.className="chip";
+    label.htmlFor=id;
+
+    const cb = document.createElement("input");
+    cb.type="checkbox";
+    cb.id=id;
+    cb.checked = setRef.has(v);
+    cb.addEventListener("change", ()=>{
+      if(cb.checked) setRef.add(v);
+      else setRef.delete(v);
+      render();
+    });
+
+    const span = document.createElement("span");
+    span.textContent = v;
+
+    label.appendChild(cb);
+    label.appendChild(span);
+    box.appendChild(label);
+  });
+}
+
+/** ====== Filtering logic ====== */
+function isAllowedByComponents(item){
+  const comps = toList(item.components);
+  for(const c of comps){
+    if(!allowedComponents.has(c)) return false;
+  }
+  return true;
+}
+
+function isAllowedByMeat(item){
+  const meats = toList(item.raw);
+  for(const m of meats){
+    if(!allowedMeats.has(m)) return false;
+  }
+  return true;
+}
+
+function passFilters(item){
+  const q = norm($("q").value);
+  const fG = $("fGroup").value;
+  const fS = $("fSub").value;
+  const fB = $("fBrand").value;
+  const fGost = $("fGost").value;
+  const fForm = $("fForm").value;
+
+  if(fG && item.group !== fG) return false;
+  if(fS && item.sub !== fS) return false;
+  if(fB && item.brand !== fB) return false;
+  if(fGost && item.gost !== fGost) return false;
+  if(fForm && item.form !== fForm) return false;
+
+  if(!isAllowedByComponents(item)) return false;
+  if(!isAllowedByMeat(item)) return false;
+
+  if(q){
+    const hay = `${item.application}\n${item.recipes}\n${item.name}`.toLowerCase();
+    if(!hay.includes(q.toLowerCase())) return false;
+  }
+
+  return true;
+}
+
+/** ====== Render results ====== */
+function render(){
+  const list = $("results");
+  list.innerHTML = "";
+
+  const items = DATA.filter(passFilters);
+  $("stats").textContent = `Найдено: ${items.length} из ${DATA.length}`;
+
+  if(items.length === 0){
+    const empty = document.createElement("div");
+    empty.className="item";
+    empty.innerHTML = `<div class="desc">Ничего не нашлось. Попробуй вернуть галочки или сбросить фильтры.</div>`;
+    list.appendChild(empty);
+  }
+
+  items.forEach(item=>{
+    const grams = gramsTotal(item);
+    const kg = kgValue();
+    const per = kg ? `${kg} кг` : `1 кг`;
+    const packs = packsTotal();
+
+    const el = document.createElement("div");
+    el.className="item";
+
+    el.innerHTML = `
+      <div class="itemTop">
+        <div style="min-width:0">
+          <p class="name">${item.name}</p>
+          <div class="meta">
+            <span class="badge"><strong>${item.brand}</strong></span>
+            <span class="badge"><strong style="font-family: var(--mono)">${item.sku}</strong></span>
+            <span class="badge">${item.form}</span>
+            <span class="badge ${item.gost === "Да" ? "gost" : ""}">ГОСТ: <strong>${item.gost}</strong></span>
+          </div>
+        </div>
+        <div>
+          <button class="primary" data-add="${item.sku}">В корзину</button>
+        </div>
+      </div>
+
+      <div class="desc">${item.desc || ""}</div>
+
+      <div class="kv">
+        <div class="box">
+          <div class="k">Область применения</div>
+          <div class="v">${item.application}</div>
+        </div>
+        <div class="box">
+          <div class="k">Рецептуры</div>
+          <div class="v">${item.recipes}</div>
+        </div>
+        <div class="box">
+          <div class="k">Составные компоненты</div>
+          <div class="v">${toList(item.components).map(x=>`• ${x}`).join("\n")}</div>
+        </div>
+        <div class="box">
+          <div class="k">Сырьё</div>
+          <div class="v">${toList(item.raw).map(x=>`• ${x}`).join("\n")}</div>
+        </div>
+      </div>
+
+      <div class="calcLine">
+        <span class="badge">Норма: <strong>${item.norm_g_per_kg} г/кг</strong></span>
+        <span class="badge">Сырьё: <strong>${per}</strong></span>
+        <span class="badge">Всего: <strong>${grams} г</strong></span>
+        <span class="badge">Пакетов: <strong>${packs} шт</strong></span>
+      </div>
+    `;
+
+    list.appendChild(el);
+  });
+
+  list.querySelectorAll("button[data-add]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const sku = btn.getAttribute("data-add");
+      const item = DATA.find(x=>x.sku===sku);
+      addToCart(item);
+    });
+  });
+
+  renderCart();
+}
+
+/** ====== Cart ====== */
+function addToCart(item){
+  cart.set(item.sku, item);
+  renderCart();
+  try{ Telegram.WebApp.HapticFeedback.impactOccurred("light"); }catch(e){}
+}
+function removeFromCart(sku){
+  cart.delete(sku);
+  renderCart();
+}
+
+function renderCart(){
+  const box = $("cart");
+  box.innerHTML = "";
+
+  if(cart.size === 0){
+    const e = document.createElement("div");
+    e.className="desc";
+    e.textContent = "Корзина пустая. Добавь позиции из списка.";
+    box.appendChild(e);
+    $("btnPdf").disabled = true;
+    return;
+  }
+  $("btnPdf").disabled = false;
+
+  const kg = kgValue() ?? 1;
+  const packs = packsTotal();
+
+  for(const [sku, item] of cart.entries()){
+    const grams = gramsTotal(item);
+
+    const line = document.createElement("div");
+    line.className="cartline";
+    line.innerHTML = `
+      <div class="l">
+        <div class="t">${item.name}</div>
+        <div class="mono">арт. ${item.sku} · норма ${item.norm_g_per_kg} г/кг · сырьё ${kg} кг</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+        <div class="mono">всего ${grams} г · пакетов ${packs} шт</div>
+        <button class="ghost" data-rm="${sku}" style="padding:8px 10px; border-radius: 14px;">убрать</button>
+      </div>
+    `;
+    box.appendChild(line);
+  }
+
+  box.querySelectorAll("button[data-rm]").forEach(btn=>{
+    btn.addEventListener("click", ()=> removeFromCart(btn.getAttribute("data-rm")));
+  });
+}
+
+/** ====== PDF export ====== */
+function downloadCartPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+
+  const kg = kgValue() ?? 1;
+  const packs = packsTotal();
+
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(14);
+  doc.text("Корзина: мясной калькулятор вкуса", 40, 50);
+
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(10);
+  doc.text(`Сырьё: ${kg} кг · Пакеты: 1 пакет на 10 кг (сейчас: ${packs} шт на товар)`, 40, 68);
+
+  const rows = Array.from(cart.values()).map(item=>{
+    const grams = gramsTotal(item);
+    return [
+      item.sku,
+      item.name,
+      `${item.norm_g_per_kg} г/кг`,
+      `${kg}`,
+      `${grams}`,
+      `${packs}`
+    ];
+  });
+
+  doc.autoTable({
+    startY: 88,
+    head: [["Артикул", "Наименование", "Норма", "Кг сырья", "Всего (г)", "Пакетов"]],
+    body: rows,
+    styles: { fontSize: 9, cellPadding: 6 },
+    headStyles: { fillColor: [206,18,45] }
+  });
+
+  doc.save("korzina.pdf");
+}
+
+/** ====== Reset and events ====== */
+function resetAll(){
+  $("q").value = "";
+  $("kg").value = "";
+
+  $("fGroup").value = "";
+  $("fSub").value = "";
+  $("fBrand").value = "";
+  $("fGost").value = "";
+  $("fForm").value = "";
+
+  const allComps = uniqSorted(DATA.flatMap(d => toList(d.components)));
+  allowedComponents = new Set(allComps);
+
+  const baseMeats = ["Кролик","Индейка","Свинина","Говядина","Курица"];
+  const fromData = uniqSorted(DATA.flatMap(d => toList(d.raw)));
+  const meats = uniqSorted(Array.from(new Set([...baseMeats, ...fromData])));
+  allowedMeats = new Set(meats);
+
+  initFilters();
+  render();
+}
+
+$("btnReset").addEventListener("click", resetAll);
+$("q").addEventListener("input", render);
+$("kg").addEventListener("input", render);
+
+["fGroup","fSub","fBrand","fGost","fForm"].forEach(id=>{
+  $(id).addEventListener("change", render);
+});
+
+$("compAll").addEventListener("click", ()=>{
+  const allComps = uniqSorted(DATA.flatMap(d => toList(d.components)));
+  allowedComponents = new Set(allComps);
+  renderChips("compChips", allComps, allowedComponents, "comp");
+  render();
+});
+
+$("meatAll").addEventListener("click", ()=>{
+  const baseMeats = ["Кролик","Индейка","Свинина","Говядина","Курица"];
+  const fromData = uniqSorted(DATA.flatMap(d => toList(d.raw)));
+  const meats = uniqSorted(Array.from(new Set([...baseMeats, ...fromData])));
+  allowedMeats = new Set(meats);
+  renderChips("meatChips", meats, allowedMeats, "meat");
+  render();
+});
+
+$("btnAddAll").addEventListener("click", ()=>{
+  const items = DATA.filter(passFilters);
+  items.forEach(item => cart.set(item.sku, item));
+  renderCart();
+  try{ Telegram.WebApp.HapticFeedback.impactOccurred("light"); }catch(e){}
+});
+
+$("btnClearCart").addEventListener("click", ()=>{
+  cart.clear();
+  renderCart();
+});
+
+$("btnPdf").addEventListener("click", downloadCartPDF);
+
+/** ====== Init ====== */
+initFilters();
+render();
+</script>
+</body>
+</html>
